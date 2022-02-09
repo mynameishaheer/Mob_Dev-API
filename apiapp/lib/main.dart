@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -6,7 +9,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  List<User> _users = [];
 
   void _incrementCounter() {
     setState(() {
@@ -106,10 +109,38 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () async {
+          await _fetchUsers();
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+Future<void> _fetchUsers() async {
+  var url = Uri.parse('https://jsonplaceholder.typicode.com/users');
+  var response = await http.get(url);
+  print('Response status: ${response.statusCode}');
+  print('Response body: ${response.body}');
+
+  final hello = jsonDecode(response.body) as List;
+
+  var username = hello.first['name'];
+
+  var users =
+      hello.map((e) => User(name: e['name'], email: e['email'])).toList();
+
+  for (var elements in users) {
+    print(elements.name);
+    print(elements.email);
+  }
+}
+
+class User {
+  final String name;
+  final String email;
+
+  User({required this.name, required this.email});
 }
